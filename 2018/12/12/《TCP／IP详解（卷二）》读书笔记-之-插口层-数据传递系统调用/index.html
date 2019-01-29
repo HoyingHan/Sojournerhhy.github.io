@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    
+
+    <title>
+      《TCP／IP详解（卷二）》读书笔记 之 插口层 -- 数据传递系统调用 | 陌北有棵树 
+    </title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    
+      <meta name="author" content="Sojournerhhy">
+    
+    
+
+    <meta name="description" content="写系统调用 write writev sendto sendmsgsosend函数作用根据插口指定的协议所支持的语义和缓存限制，将数据&amp;amp;控制信息传递给插口指定的协议。根据是否是可靠协议的不同实现主要指的是对发送缓存的sb_hiwat，sb_lowat两个值的解释可靠的协议缓存 发送缓存保存两类数据：  还没有发送的数据    已经发送但还没有确认的数据不可靠的协议缓存   发送缓存不需保存">
+<meta name="keywords" content="TCP／IP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《TCP／IP详解（卷二）》读书笔记 之 插口层 -- 数据传递系统调用 | 陌北有棵树">
+<meta property="og:url" content="http://yoursite.com/2018/12/12/《TCP／IP详解（卷二）》读书笔记-之-插口层-数据传递系统调用/index.html">
+<meta property="og:site_name" content="陌北有棵树">
+<meta property="og:description" content="写系统调用 write writev sendto sendmsgsosend函数作用根据插口指定的协议所支持的语义和缓存限制，将数据&amp;amp;控制信息传递给插口指定的协议。根据是否是可靠协议的不同实现主要指的是对发送缓存的sb_hiwat，sb_lowat两个值的解释可靠的协议缓存 发送缓存保存两类数据：  还没有发送的数据    已经发送但还没有确认的数据不可靠的协议缓存   发送缓存不需保存">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-12-16T13:19:18.989Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="《TCP／IP详解（卷二）》读书笔记 之 插口层 -- 数据传递系统调用 | 陌北有棵树">
+<meta name="twitter:description" content="写系统调用 write writev sendto sendmsgsosend函数作用根据插口指定的协议所支持的语义和缓存限制，将数据&amp;amp;控制信息传递给插口指定的协议。根据是否是可靠协议的不同实现主要指的是对发送缓存的sb_hiwat，sb_lowat两个值的解释可靠的协议缓存 发送缓存保存两类数据：  还没有发送的数据    已经发送但还没有确认的数据不可靠的协议缓存   发送缓存不需保存">
+    
+    
+    
+      <link rel="icon" type="image/x-icon" href="/favicon.png">
+    
+    <link rel="stylesheet" href="/css/uno.css">
+    <link rel="stylesheet" href="/css/highlight.css">
+    <link rel="stylesheet" href="/css/archive.css">
+    <link rel="stylesheet" href="/css/china-social-icon.css">
+
+</head>
+<body>
+
+    <span class="mobile btn-mobile-menu">
+        <i class="icon icon-list btn-mobile-menu__icon"></i>
+        <i class="icon icon-x-circle btn-mobile-close__icon hidden"></i>
+    </span>
+
+    
+
+<header class="panel-cover panel-cover--collapsed">
+
+
+  <div class="panel-main">
+
+  
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+
+        
+
+        <h1 class="panel-cover__title panel-title"><a href="/" title="link to homepage">陌北有棵树</a></h1>
+        <hr class="panel-cover__divider">
+
+        
+
+        <div class="navigation-wrapper">
+
+          <nav class="cover-navigation cover-navigation--primary">
+            <ul class="navigation">
+
+              
+                
+                <li class="navigation__item"><a href="/#blog" title="" class="blog-button">code</a></li>
+              
+                
+                <li class="navigation__item"><a href="/#poetry" title="" class="">简言</a></li>
+              
+                
+                <li class="navigation__item"><a href="/about" title="" class="">关于</a></li>
+              
+                
+                <li class="navigation__item"><a href="/archive" title="" class="">归档</a></li>
+              
+
+            </ul>
+          </nav>
+
+          <!-- ----------------------------
+To add a new social icon simply duplicate one of the list items from below
+and change the class in the <i> tag to match the desired social network
+and then add your link to the <a>. Here is a full list of social network
+classes that you can use:
+
+    icon-social-500px
+    icon-social-behance
+    icon-social-delicious
+    icon-social-designer-news
+    icon-social-deviant-art
+    icon-social-digg
+    icon-social-dribbble
+    icon-social-facebook
+    icon-social-flickr
+    icon-social-forrst
+    icon-social-foursquare
+    icon-social-github
+    icon-social-google-plus
+    icon-social-hi5
+    icon-social-instagram
+    icon-social-lastfm
+    icon-social-linkedin
+    icon-social-medium
+    icon-social-myspace
+    icon-social-path
+    icon-social-pinterest
+    icon-social-rdio
+    icon-social-reddit
+    icon-social-skype
+    icon-social-spotify
+    icon-social-stack-overflow
+    icon-social-steam
+    icon-social-stumbleupon
+    icon-social-treehouse
+    icon-social-tumblr
+    icon-social-twitter
+    icon-social-vimeo
+    icon-social-xbox
+    icon-social-yelp
+    icon-social-youtube
+    icon-social-zerply
+    icon-mail
+
+-------------------------------->
+
+<!-- add social info here -->
+
+
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="panel-cover--overlay"></div>
+  </div>
+</header>
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner entry">
+            
+
+<article class="post-container post-container--single">
+
+  <header class="post-header">
+    
+    <h1 class="post-title">《TCP／IP详解（卷二）》读书笔记 之 插口层 -- 数据传递系统调用</h1>
+
+    
+
+    <div class="post-meta">
+      <time datetime="2018-12-12" class="post-meta__date date">2018-12-12</time> 
+
+      <span class="post-meta__tags tags">
+
+          
+
+          
+             &#8226; 标签:
+            <font class="tags">
+              <a class="tags-link" href="/tags/TCP／IP/">TCP／IP</a>
+            </font>
+          
+
+      </span>
+    </div>
+    
+    
+
+  </header>
+
+  <section id="post-content" class="article-content post">
+    <h2 id="写系统调用"><a href="#写系统调用" class="headerlink" title="写系统调用"></a>写系统调用</h2><ul>
+<li>write</li>
+<li>writev</li>
+<li>sendto</li>
+<li>sendmsg<h3 id="sosend函数"><a href="#sosend函数" class="headerlink" title="sosend函数"></a>sosend函数</h3><h4 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h4>根据插口指定的协议所支持的语义和缓存限制，将数据&amp;控制信息传递给插口指定的协议。<h4 id="根据是否是可靠协议的不同实现"><a href="#根据是否是可靠协议的不同实现" class="headerlink" title="根据是否是可靠协议的不同实现"></a>根据是否是可靠协议的不同实现</h4>主要指的是对发送缓存的sb_hiwat，sb_lowat两个值的解释<h5 id="可靠的协议缓存"><a href="#可靠的协议缓存" class="headerlink" title="可靠的协议缓存"></a>可靠的协议缓存</h5></li>
+<li>发送缓存保存两类数据：</li>
+<li><ul>
+<li>还没有发送的数据</li>
+</ul>
+</li>
+<li><ul>
+<li>已经发送但还没有确认的数据<h5 id="不可靠的协议缓存"><a href="#不可靠的协议缓存" class="headerlink" title="不可靠的协议缓存"></a>不可靠的协议缓存</h5></li>
+</ul>
+</li>
+<li>发送缓存不需保存任何数据</li>
+<li>不需等待任何确认</li>
+<li>每个报文一旦处于排队等待发送的状态，插口层立即将它传送到协议<h4 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h4></li>
+<li>so：指向相应插口的指针</li>
+<li>addr：指向目的地址的指针</li>
+<li>uio：指向描述用户空间的IO缓存的uio结构</li>
+<li>top：保存将要发送数据的mbuf链</li>
+<li>control：保存将要发送的控制信息的mbuf链</li>
+<li>flags：本次写调用的一些选项</li>
+</ul>
+
+  </section>
+
+  <section class="post-comments">
+
+    <!-- 将评论系统（例如Disqus、多说、友言、畅言等）提供的代码片段粘贴在这里 -->
+    
+</section>
+
+
+</article>
+
+
+            <footer class="footer">
+
+    <span class="footer__copyright">&copy; 2014-2015. | 由<a href="https://hexo.io/">Hexo</a>强力驱动 | 主题<a href="https://github.com/someus/huno">Huno</a></span>
+    
+</footer>
+        </div>
+    </div>
+
+    <!-- js files -->
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/main.js"></script>
+    <script src="/js/scale.fix.js"></script>
+    
+
+    
+
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript"> 
+        $(document).ready(function(){
+            MathJax.Hub.Config({ 
+                tex2jax: {inlineMath: [['[latex]','[/latex]'], ['\\(','\\)']]} 
+            });
+        });
+    </script>
+
+
+    
+
+    <script src="/js/awesome-toc.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            $.awesome_toc({
+                overlay: true,
+                contentId: "post-content",
+            });
+        });
+    </script>
+
+
+    
+    
+    <!--kill ie6 -->
+<!--[if IE 6]>
+  <script src="//letskillie6.googlecode.com/svn/trunk/2/zh_CN.js"></script>
+<![endif]-->
+
+</body>
+</html>
